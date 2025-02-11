@@ -8,15 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Branch {
+    private int id;
     private String name;
     private Bank bank;
     private List<Contribution> deposits;
 
-    public Branch(String name, Bank bank) {
+    public Branch(int id, String name, Bank bank) {
+        this.id = id;
         this.name = name;
         this.bank = bank;
         this.deposits = new ArrayList<>();
         loadDepositsFromDatabase();
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getName() {
@@ -51,8 +57,8 @@ public class Branch {
 
     private void loadDepositsFromDatabase() {
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM contributions WHERE branch_name = ?")) {
-            stmt.setString(1, this.name);
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM contributions WHERE branch_id = ?")) {
+            stmt.setInt(1, this.id);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 Contribution deposit = new Contribution(rs.getInt("id"), rs.getString("depositors_name"), rs.getDouble("amount"), this);
@@ -65,11 +71,10 @@ public class Branch {
 
     private void saveDepositToDatabase(Contribution deposit) {
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO contributions (id, depositors_name, amount, branch_name) VALUES (?, ?, ?, ?)")) {
-            stmt.setInt(1, deposit.getId());
-            stmt.setString(2, deposit.getDepositorsName());
-            stmt.setDouble(3, deposit.getAmount());
-            stmt.setString(4, this.name);
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO contributions (depositors_name, amount, branch_id) VALUES (?, ?, ?)")) {
+            stmt.setString(1, deposit.getDepositorsName());
+            stmt.setDouble(2, deposit.getAmount());
+            stmt.setInt(3, this.id);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -78,9 +83,9 @@ public class Branch {
 
     private void removeDepositFromDatabase(Contribution deposit) {
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("DELETE FROM contributions WHERE id = ? AND branch_name = ?")) {
+             PreparedStatement stmt = conn.prepareStatement("DELETE FROM contributions WHERE id = ? AND branch_id = ?")) {
             stmt.setInt(1, deposit.getId());
-            stmt.setString(2, this.name);
+            stmt.setInt(2, this.id);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

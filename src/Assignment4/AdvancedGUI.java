@@ -21,21 +21,23 @@ public class AdvancedGUI {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0, 1));
 
+        JButton showBankInfoButton = new JButton("Show Bank Information");
         JButton addUserButton = new JButton("Add User");
         JButton removeUserButton = new JButton("Remove User");
-        JButton addContributionButton = new JButton("Add Contribution");
-        JButton removeContributionButton = new JButton("Remove Contribution");
-        JButton showDepositsButton = new JButton("Show Deposits");
         JButton replenishAccountButton = new JButton("Replenish Account");
         JButton showTotalDepositAmountButton = new JButton("Show Total Deposit Amount");
 
+        panel.add(showBankInfoButton);
         panel.add(addUserButton);
         panel.add(removeUserButton);
-        panel.add(addContributionButton);
-        panel.add(removeContributionButton);
-        panel.add(showDepositsButton);
         panel.add(replenishAccountButton);
         panel.add(showTotalDepositAmountButton);
+
+        showBankInfoButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showBankInformation();
+            }
+        });
 
         addUserButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -49,23 +51,6 @@ public class AdvancedGUI {
             }
         });
 
-        addContributionButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addContribution();
-            }
-        });
-
-        removeContributionButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                removeContribution();
-            }
-        });
-
-        showDepositsButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                showDeposits();
-            }
-        });
 
         replenishAccountButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -83,11 +68,51 @@ public class AdvancedGUI {
         frame.setVisible(true);
     }
 
+    private void showBankInformation() {
+        StringBuilder message = new StringBuilder("Bank Name: " + bank.getName() + "\n");
+        message.append("Bank ID: ").append(bank.getId()).append("\n");
+        message.append("Number of Branches: ").append(bank.getBranches().size()).append("\n\n");
+
+        message.append("Branches:\n");
+        for (Branch branch : bank.getBranches()) {
+            message.append("Branch ID: ").append(branch.getId()).append(", Branch Name: ").append(branch.getName()).append("\n");
+        }
+
+        String branchIdStr = JOptionPane.showInputDialog(message.toString() + "\nEnter the Branch ID to view details:");
+        int branchId = Integer.parseInt(branchIdStr);
+
+        Branch selectedBranch = null;
+        for (Branch branch : bank.getBranches()) {
+            if (branch.getId() == branchId) {
+                selectedBranch = branch;
+                break;
+            }
+        }
+
+        if (selectedBranch != null) {
+            showBranchInformation(selectedBranch);
+        } else {
+            JOptionPane.showMessageDialog(null, "Branch not found.");
+        }
+    }
+
+    private void showBranchInformation(Branch branch) {
+        StringBuilder message = new StringBuilder("Branch Name: " + branch.getName() + "\n");
+        message.append("Branch ID: ").append(branch.getId()).append("\n\n");
+
+        message.append("Deposits:\n");
+        for (Contribution deposit : branch.getDeposits()) {
+            message.append("ID: ").append(deposit.getId()).append(", Depositor: ").append(deposit.getDepositorsName()).append(", Amount: ").append(deposit.getAmount()).append("\n");
+        }
+
+        JOptionPane.showMessageDialog(null, message.toString());
+    }
+
     private void addUser() {
-        String branchName = JOptionPane.showInputDialog("Enter the branch name (Main or Secondary):");
+        int branchId = Integer.parseInt(JOptionPane.showInputDialog("Enter the branch ID:"));
         Branch branch = null;
         for (Branch b : bank.getBranches()) {
-            if (b.getName().equalsIgnoreCase(branchName)) {
+            if (b.getId() == branchId) {
                 branch = b;
                 break;
             }
@@ -107,10 +132,10 @@ public class AdvancedGUI {
     }
 
     private void removeUser() {
-        String branchName = JOptionPane.showInputDialog("Enter the branch name (Main or Secondary):");
+        int branchId = Integer.parseInt(JOptionPane.showInputDialog("Enter the branch ID:"));
         Branch branch = null;
         for (Branch b : bank.getBranches()) {
-            if (b.getName().equalsIgnoreCase(branchName)) {
+            if (b.getId() == branchId) {
                 branch = b;
                 break;
             }
@@ -137,10 +162,10 @@ public class AdvancedGUI {
     }
 
     private void addContribution() {
-        String branchName = JOptionPane.showInputDialog("Enter the branch name (Main or Secondary):");
+        int branchId = Integer.parseInt(JOptionPane.showInputDialog("Enter the branch ID:"));
         Branch branch = null;
         for (Branch b : bank.getBranches()) {
-            if (b.getName().equalsIgnoreCase(branchName)) {
+            if (b.getId() == branchId) {
                 branch = b;
                 break;
             }
@@ -160,10 +185,10 @@ public class AdvancedGUI {
     }
 
     private void removeContribution() {
-        String branchName = JOptionPane.showInputDialog("Enter the branch name (Main or Secondary):");
+        int branchId = Integer.parseInt(JOptionPane.showInputDialog("Enter the branch ID:"));
         Branch branch = null;
         for (Branch b : bank.getBranches()) {
-            if (b.getName().equalsIgnoreCase(branchName)) {
+            if (b.getId() == branchId) {
                 branch = b;
                 break;
             }
@@ -189,22 +214,11 @@ public class AdvancedGUI {
         }
     }
 
-    private void showDeposits() {
-        StringBuilder message = new StringBuilder("Showing all deposits in the bank:\n");
-        for (Branch branch : bank.getBranches()) {
-            message.append("Branch: ").append(branch.getName()).append("\n");
-            for (Contribution deposit : branch.getDeposits()) {
-                message.append("ID: ").append(deposit.getId()).append(", Depositor: ").append(deposit.getDepositorsName()).append(", Amount: ").append(deposit.getAmount()).append("\n");
-            }
-        }
-        JOptionPane.showMessageDialog(null, message.toString());
-    }
-
     private void replenishAccount() {
-        String branchName = JOptionPane.showInputDialog("Enter the branch name (Main or Secondary):");
+        int branchId = Integer.parseInt(JOptionPane.showInputDialog("Enter the branch ID:"));
         Branch branch = null;
         for (Branch b : bank.getBranches()) {
-            if (b.getName().equalsIgnoreCase(branchName)) {
+            if (b.getId() == branchId) {
                 branch = b;
                 break;
             }
@@ -249,9 +263,9 @@ public class AdvancedGUI {
     }
 
     public static void main(String[] args) {
-        Bank bank = new Bank("National");
-        Branch branch1 = new Branch("Main", bank);
-        Branch branch2 = new Branch("Secondary", bank);
+        Bank bank = new Bank(1, "National");
+        Branch branch1 = new Branch(1, "Main", bank);
+        Branch branch2 = new Branch(2, "Secondary", bank);
         bank.addBranch(branch1);
         bank.addBranch(branch2);
 

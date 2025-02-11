@@ -40,10 +40,10 @@ public class Contribution {
 
     private void updateAmountInDatabase() {
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("UPDATE contributions SET amount = ? WHERE id = ? AND branch_name = ?")) {
+             PreparedStatement stmt = conn.prepareStatement("UPDATE contributions SET amount = ? WHERE id = ? AND branch_id = ?")) {
             stmt.setDouble(1, this.amount);
             stmt.setInt(2, this.id);
-            stmt.setString(3, this.branch.getName());
+            stmt.setInt(3, this.branch.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

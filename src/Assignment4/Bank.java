@@ -8,13 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Bank {
+    private int id;
     private String name;
     private List<Branch> branches;
 
-    public Bank(String name) {
+    public Bank(int id, String name) {
+        this.id = id;
         this.name = name;
         this.branches = new ArrayList<>();
         loadBranchesFromDatabase();
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getName() {
@@ -32,11 +38,11 @@ public class Bank {
 
     private void loadBranchesFromDatabase() {
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM branches WHERE bank_name = ?")) {
-            stmt.setString(1, this.name);
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM branches WHERE bank_id = ?")) {
+            stmt.setInt(1, this.id);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Branch branch = new Branch(rs.getString("name"), this);
+                Branch branch = new Branch(rs.getInt("id"), rs.getString("name"), this);
                 branches.add(branch);
             }
         } catch (SQLException e) {
@@ -46,9 +52,9 @@ public class Bank {
 
     private void saveBranchToDatabase(Branch branch) {
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("INSERT INTO branches (name, bank_name) VALUES (?, ?)")) {
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO branches (name, bank_id) VALUES (?, ?)")) {
             stmt.setString(1, branch.getName());
-            stmt.setString(2, this.name);
+            stmt.setInt(2, this.id);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
